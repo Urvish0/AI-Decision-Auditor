@@ -3,7 +3,7 @@ from backend.agents.planner import create_plan
 from backend.agents.critic import critique_section
 from backend.services.retriever import select_relevant_section
 from langgraph.graph import StateGraph
-
+from backend.agents.verifier import verify_consistency
 
 class AgentState(TypedDict):
     query: str
@@ -11,6 +11,7 @@ class AgentState(TypedDict):
     plan: str
     section: dict
     critique: str 
+    verification: str 
 
 def planner_node(state: AgentState):
     plan = create_plan(state["query"])
@@ -26,16 +27,26 @@ def critic_node(state: AgentState):
     critique = critique_section(state["section"], state["query"])
     return {"critique": critique}
 
+def verifier_node(state: AgentState):
+    verification = verify_consistency(
+        state["tree"],
+        state["section"],
+        state["query"]
+    )
+    return {"verification": verification}
+
 def build_graph():
     graph = StateGraph(AgentState)
 
     graph.add_node("planner", planner_node)
     graph.add_node("retriever", retriever_node)
     graph.add_node("critic", critic_node)
-
+    graph.add_node("verifier", verifier_node)
+    
     graph.set_entry_point("planner")
 
     graph.add_edge("planner", "retriever")
     graph.add_edge("retriever", "critic")
-
+    graph.add_edge("critic", "verifier")
+    
     return graph.compile()

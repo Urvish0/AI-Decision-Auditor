@@ -15,3 +15,6 @@ result = graph.invoke({
 
 print("\n=== FINAL OUTPUT ===\n")
 print(result)
+
+print("\n=== VERIFICATION ===\n")
+print(result["verification"])
