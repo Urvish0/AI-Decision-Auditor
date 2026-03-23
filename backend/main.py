@@ -1,15 +1,11 @@
-# from fastapi import FastAPI
-
-# app = FastAPI()
-
-# @app.get("/")
-# def read_root():
-#     return {"message": "AI Decision Auditor Backend Running"}
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from backend.api.query import router as query_router
+
 app = FastAPI()
+
+app.include_router(query_router)
 
 app.add_middleware(
     CORSMiddleware,
