@@ -8,16 +8,29 @@ graph = build_graph()
 
 @router.post("/query")
 async def query_doc(payload: dict):
-    query = payload.get("query")
+    try:
+        query = payload.get("query")
 
-    with open("backend/data/sample_doc.txt") as f:
-        text = f.read()
+        if not query:
+            return {"error": "Query is required"}
 
-    tree = build_tree(text)
+        with open("backend/data/sample_doc.txt") as f:
+            text = f.read()
 
-    result = graph.invoke({
-        "query": query,
-        "tree": tree
-    })
+        tree = build_tree(text)
 
-    return result
+        result = graph.invoke({
+            "query": query,
+            "tree": tree
+        })
+
+        return {
+            "plan": result.get("plan"),
+            "section": result.get("section", {}).get("title"),
+            "critique": result.get("critique"),
+            "verification": result.get("verification", {}).get("raw"),
+            "confidence": result.get("verification", {}).get("confidence"),
+        }
+
+    except Exception as e:
+        return {"error": str(e)}

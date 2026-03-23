@@ -11,7 +11,7 @@ class AgentState(TypedDict):
     plan: str
     section: dict
     critique: str 
-    verification: str 
+    verification: dict 
 
 def planner_node(state: AgentState):
     plan = create_plan(state["query"])

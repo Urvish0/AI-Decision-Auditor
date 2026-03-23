@@ -1,4 +1,5 @@
 from backend.services.llm import call_llm
+import re
 
 def verify_consistency(tree, selected_section, query):
     all_sections = "\n\n".join([
@@ -7,24 +8,35 @@ def verify_consistency(tree, selected_section, query):
     ])
 
     prompt = f"""
-You are a verification agent.
+                You are a verification agent.
 
-We have selected this section as relevant:
-{selected_section['title']}:
-{selected_section['content']}
+                We have selected this section:
+                {selected_section['title']}:
+                {selected_section['content']}
 
-Now compare it with ALL other sections below and check for inconsistencies.
+                Compare it with ALL other sections below.
 
-All Sections:
-{all_sections}
+                All Sections:
+                {all_sections}
 
-Question:
-{query}
+                Question:
+                {query}
 
-Return:
-- Contradictions (if any)
-- Inconsistencies
-- Confidence Score (0 to 1)
-"""
+                Return STRICTLY in this format:
 
-    return call_llm(prompt)
+                Contradictions: <text>
+                Inconsistencies: <text>
+                Confidence: <number between 0 and 1>
+                """
+
+    response = call_llm(prompt)
+
+    # 🔥 Parse confidence
+    match = re.search(r"Confidence:\s*([0-9.]+)", response)
+
+    confidence = float(match.group(1)) if match else 0.5
+
+    return {
+        "raw": response,
+        "confidence": confidence
+    }
