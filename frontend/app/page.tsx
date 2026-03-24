@@ -6,14 +6,16 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [simulationQuery, setSimulationQuery] = useState("");
 
   const handleSubmit = async () => {
     setLoading(true);
   
     const formData = new FormData();
-    if (file) formData.append("file", file);
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
     formData.append("query", simulationQuery || query);
   
     const res = await fetch("http://localhost:8000/query", {
@@ -30,7 +32,11 @@ export default function Home() {
     <div style={{ padding: "40px", fontFamily: "Arial" }}>
       <h1>🧠 AI Decision Auditor</h1>
 
-      <input type="file" onChange={(e) => setFile(e.target.files?.[0] || null)} />
+      <input
+        type="file"
+        multiple
+        onChange={(e) => setFiles(Array.from(e.target.files || []))}
+      />
 
       <div style={{ marginBottom: "20px" }}>
         <input
@@ -56,18 +62,26 @@ export default function Home() {
       {result?.error && <p style={{ color: "red" }}>{result.error}</p>}
 
       {result && !result.error && (
+  <div>
+
+    {result.mode === "multi_doc" ? (
         <div>
+          <h3>🧠 Cross-Document Reasoning</h3>
+          <pre>{result.comparison}</pre>
+        </div>
+      ) : (
+        <>
           <div style={{ marginBottom: "20px" }}>
             <h3>📊 Plan</h3>
             <pre>{result.plan}</pre>
           </div>
 
           {result.steps && (
-              <div>
-                <h3>🧭 Execution Steps</h3>
-                <pre>{result.steps.join(" → ")}</pre>
-              </div>
-            )}
+            <div>
+              <h3>🧭 Execution Steps</h3>
+              <pre>{result.steps.join(" → ")}</pre>
+            </div>
+          )}
 
           <div style={{ marginBottom: "20px" }}>
             <h3>📄 Section</h3>
@@ -90,6 +104,7 @@ export default function Home() {
               <pre>{result.simulation}</pre>
             </div>
           )}
+
           {result.estimation && (
             <div>
               <h3>💰 Salary Estimation</h3>
@@ -101,9 +116,11 @@ export default function Home() {
             <h3>📈 Confidence Score</h3>
             <p>{Math.round((result.confidence || 0) * 100)}%</p>
           </div>
-        </div>
-
+        </>
       )}
+
+    </div>
+  )}
     </div>
   );
 }

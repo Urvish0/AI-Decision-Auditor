@@ -1,4 +1,5 @@
 from fastapi import APIRouter, UploadFile, File
+from backend.agents.comparator import compare_documents
 from backend.services.structure_builder import build_smart_tree
 from backend.agents.graph import build_graph
 from backend.services.pdf_parser import extract_text_from_pdf
@@ -14,6 +15,7 @@ from backend.services.query_planner import create_execution_plan
 from backend.services.llm import call_llm
 from backend.agents.simulator import simulate_scenario
 from fastapi import Form
+from typing import List
 
 router = APIRouter()
 
@@ -21,17 +23,39 @@ graph = build_graph()
 
 @router.post("/query")
 async def query_doc(
-    file: UploadFile = File(...),
+    files: List[UploadFile] = File(...),
     query: str = Form(...)
 ):
+    print("FILES RECEIVED:", len(files))
+    for f in files:
+        print("FILE:", f.filename)
     try:
-        file_path = f"backend/data/{file.filename}"
+        texts = []
 
-        with open(file_path, "wb") as f:
-            f.write(await file.read())
+        for file in files:
+            file_path = f"backend/data/{file.filename}"
 
-        text = extract_text_from_pdf(file_path)
-        capabilities = get_capabilities(query)
+            with open(file_path, "wb") as f:
+                f.write(await file.read())
+
+            text = extract_text_from_pdf(file_path)
+
+            texts.append({
+                "name": file.filename,
+                "content": text
+            })
+            
+        if len(texts) > 1:
+            print("MULTI DOC MODE TRIGGERED")
+
+            comparison = compare_documents(texts, query)
+
+            return {
+                "mode": "multi_doc",
+                "comparison": comparison
+        }
+
+        text = texts[0]["content"]
         
         print("RAW QUERY:", query)
 
@@ -56,9 +80,11 @@ async def query_doc(
 
         section = None
         response = {
-            "steps": [s["action"] for s in steps],  # 🔥 trace
-            "plan": create_plan(query)
+            "steps": [s["action"] for s in steps]
         }
+        
+        if "reasoning" in [s["action"] for s in steps]:
+            response["plan"] = create_plan(query)
 
         print("STEPS:", steps)
         
