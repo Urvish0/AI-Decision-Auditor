@@ -54,6 +54,13 @@ export default function Home() {
             <pre>{result.plan}</pre>
           </div>
 
+          {result.steps && (
+              <div>
+                <h3>🧭 Execution Steps</h3>
+                <pre>{result.steps.join(" → ")}</pre>
+              </div>
+            )}
+
           <div style={{ marginBottom: "20px" }}>
             <h3>📄 Section</h3>
             <pre>{result.section}</pre>

@@ -1,0 +1,85 @@
+AI Decision Auditor - Future Roadmap
+
+=== PHASE 1: ROBUSTNESS (NEXT) ===
+
+1. Hybrid Planner System
+- Combine rules + LLM planner
+- Add validation layer for actions
+- Ensure predictable execution
+
+2. Execution Trace
+- Show steps taken (retrieve → critique → verify)
+- Improve explainability
+
+3. Fix Confidence System
+- Replace LLM confidence
+- Add:
+  - retrieval score
+  - consistency score
+  - agent agreement
+
+
+=== PHASE 2: INTELLIGENCE UPGRADE ===
+
+4. What-if Simulation
+- Add simulation agent
+- Allow hypothetical scenarios
+- Output impact analysis
+
+5. Multi-Document Reasoning
+- Upload multiple PDFs
+- Compare and analyze across documents
+
+6. Better Document Structuring
+- Improve LLM parsing
+- Add chunking + labeling
+- Optional: integrate PageIndex
+
+
+=== PHASE 3: DIFFERENTIATION ===
+
+7. Reasoning Visualization UI
+- Step-by-step pipeline view
+- Interactive reasoning trace
+
+8. Mode-aware UI
+- Different layouts for:
+  - audit
+  - estimation
+  - simulation
+
+
+=== PHASE 4: POLISH & DEPLOYMENT ===
+
+9. Demo Preparation
+- 2–3 strong use cases
+- Clear narrative
+
+10. Resume & Positioning
+- Strong project description
+- System design explanation
+
+11. Deployment
+- Backend (Render/Railway)
+- Frontend (Vercel)
+
+12. Optional Advanced
+- Hybrid RAG (vector + reasoning)
+- Memory system
+- Agent evaluation metrics
+
+
+=== FINAL GOAL ===
+
+Build a:
+"Reasoning-first AI Decision Engine"
+
+Not just:
+- RAG system
+- Chatbot
+
+But:
+- Analyzes
+- Critiques
+- Verifies
+- Simulates decisions

@@ -9,12 +9,21 @@ from backend.agents.planner import create_plan
 from backend.agents.critic import critique_section
 from backend.agents.verifier import verify_consistency
 from backend.services.retriever import select_relevant_section
+from backend.services.guardrails import apply_guardrails
+from backend.services.query_planner import create_execution_plan
+from backend.services.llm import call_llm
+from backend.agents.simulator import simulate_scenario
+from fastapi import Form
+
 router = APIRouter()
 
 graph = build_graph()
 
 @router.post("/query")
-async def query_doc(file: UploadFile = File(...), query: str = ""):
+async def query_doc(
+    file: UploadFile = File(...),
+    query: str = Form(...)
+):
     try:
         file_path = f"backend/data/{file.filename}"
 
@@ -23,37 +32,67 @@ async def query_doc(file: UploadFile = File(...), query: str = ""):
 
         text = extract_text_from_pdf(file_path)
         capabilities = get_capabilities(query)
+        
+        print("RAW QUERY:", query)
 
-        # Always build tree
+        # Step 1: Guardrails
+        steps = apply_guardrails(query)
+        
+        q = query.lower()
+
+        if "audit" in q:
+            steps = [
+                {"action": "retrieve"},
+                {"action": "critique"},
+                {"action": "verify"}
+            ]
+
+        # Step 2: Planner fallback
+        if not steps:
+            steps = create_execution_plan(query)
+
+        # Step 3: Build tree
         tree = build_smart_tree(text)
 
         section = None
- 
-        if "retrieval" in capabilities:
-            section = select_relevant_section(tree, query)
+        response = {
+            "steps": [s["action"] for s in steps],  # 🔥 trace
+            "plan": create_plan(query)
+        }
 
-        # fallback
-        if not section:
-            section = {"content": text, "title": "Full Document"}
+        print("STEPS:", steps)
+        
+        # Step 4: Execute
+        for step in steps:
+            action = step.get("action")
 
-        response = {}
+            if action == "retrieve":
+                section = select_relevant_section(tree, query)
 
-        if "reasoning" in capabilities and "estimation" not in capabilities:
-            response["plan"] = create_plan(query)
+                if not section:
+                    section = {"content": text, "title": "Full Document"}
 
-        if "critique" in capabilities:
-            response["critique"] = critique_section(section, query)
+                response["section"] = section.get("title")
 
-        if "verification" in capabilities:
-            response["verification"] = verify_consistency(tree, section, query)
+            elif action == "critique":
+                response["critique"] = critique_section(section, query)
 
-        if "estimation" in capabilities:
-            response["estimation"] = estimate_salary(section, query)
+            elif action == "verify":
+                response["verification"] = verify_consistency(tree, section, query)
+                response["confidence"] = response["verification"]["confidence"]
+                response["verification"] = response["verification"]["raw"]
 
-        # Always return section
-        response["section"] = section.get("title")
+            elif action == "estimate":
+                response["estimation"] = estimate_salary(section, query)
+
+            elif action == "simulate":
+                response["simulation"] = simulate_scenario(section, query)
+
+            elif action == "summarize":
+                response["answer"] = call_llm(
+                    f"Answer this:\n{query}\n\nContext:\n{section['content']}"
+                )
 
         return response
-
     except Exception as e:
         return {"error": str(e)}

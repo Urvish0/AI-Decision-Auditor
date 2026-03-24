@@ -1,0 +1,64 @@
+AI Decision Auditor - Project Progress
+
+=== COMPLETED ===
+
+Day 0:
+- Project setup (FastAPI backend, Next.js frontend)
+- Groq integration
+
+Day 1:
+- Built custom tree-based document structure
+- Implemented vectorless RAG concept
+
+Day 2:
+- LLM-based retrieval
+- Replaced keyword search with reasoning-based selection
+
+Day 3:
+- Planner agent (breaks query into steps)
+- Critic agent (finds risks, missing info)
+
+Day 4:
+- LangGraph integration
+- Stateful multi-agent pipeline
+
+Day 5:
+- Verifier agent
+- Cross-section consistency checking
+- Confidence extraction (basic)
+
+Day 6:
+- Full frontend UI
+- API integration
+- End-to-end flow working
+
+Day 7:
+- UX improvements
+- Error handling
+- Clean API responses
+- Confidence display
+
+Day 8:
+- PDF upload support
+- Real document processing
+- Smart LLM-based document structuring
+
+Additional:
+- Capability routing system
+- Estimation agent (salary prediction)
+- Hybrid routing (rules + LLM)
+- Bug fixes for robustness
+
+
+=== CURRENT SYSTEM ===
+
+User → Upload PDF → Query
+→ Guardrails (rules)
+→ Capability/Planner
+→ Agents (Retriever, Critic, Verifier, Estimator, etc.)
+→ Response + UI display
+
+System Type:
+- Reasoning-first RAG
+- Multi-agent architecture
+- Vectorless retrieval
