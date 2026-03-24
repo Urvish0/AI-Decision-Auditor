@@ -34,7 +34,7 @@ def verify_consistency(tree, selected_section, query):
     # 🔥 Parse confidence
     match = re.search(r"Confidence:\s*([0-9.]+)", response)
 
-    confidence = float(match.group(1)) if match else 0.5
+    confidence = float(match.group(1)) if match else 0.7
 
     return {
         "raw": response,

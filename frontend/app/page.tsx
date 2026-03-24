@@ -69,6 +69,13 @@ export default function Home() {
             <pre>{result.verification}</pre>
           </div>
 
+          {result.estimation && (
+            <div>
+              <h3>💰 Salary Estimation</h3>
+              <pre>{result.estimation}</pre>
+            </div>
+          )}
+
           <div>
             <h3>📈 Confidence Score</h3>
             <p>{Math.round((result.confidence || 0) * 100)}%</p>
