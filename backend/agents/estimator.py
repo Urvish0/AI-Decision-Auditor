@@ -1,19 +1,29 @@
 from backend.services.llm import call_llm
 
-def estimate_salary(section, query):
+def estimate_value(section, query):
     prompt = f"""
-You are an AI career and compensation expert.
+You are an AI estimation engine.
 
-Based on the following resume:
+Given the context:
 
 {section['content']}
 
-Answer:
+And the user query:
+
 {query}
 
+Identify what needs to be estimated (e.g., salary, cost, risk, time).
+
 Return:
-- Estimated Salary Range (in INR or USD)
-- Justification
+
+What is being estimated:
+<entity>
+
+Estimated Value:
+<value or range>
+
+Reasoning:
+<short explanation>
 """
 
     return call_llm(prompt)

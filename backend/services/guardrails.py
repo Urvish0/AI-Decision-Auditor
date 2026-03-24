@@ -9,7 +9,7 @@ def apply_guardrails(query: str):
     # DEBUG
     print("NORMALIZED QUERY:", q)
 
-    if any(word in q for word in ["salary", "compensation", "package", "ctc"]):
+    if any(word in q for word in ["estimate", "cost", "salary", "risk", "time"]):
         return [{"action": "retrieve"}, {"action": "estimate"}]
 
     if any(word in q for word in ["audit", "review", "analyze", "analysis", "evaluate"]):

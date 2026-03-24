@@ -71,6 +71,19 @@ export default function Home() {
         </div>
       ) : (
         <>
+        {result.trace && (
+          <div style={{ marginBottom: "20px" }}>
+            <h3>🧠 Reasoning Trace</h3>
+            {result.trace.map((t: any, i: number) => (
+              <div key={i} style={{ marginBottom: "10px" }}>
+                <strong>{t.step.toUpperCase()}</strong>
+                <div style={{ marginLeft: "10px" }}>
+                  {t.output}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
           <div style={{ marginBottom: "20px" }}>
             <h3>📊 Plan</h3>
             <pre>{result.plan}</pre>

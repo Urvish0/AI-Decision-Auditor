@@ -4,7 +4,7 @@ from backend.services.structure_builder import build_smart_tree
 from backend.agents.graph import build_graph
 from backend.services.pdf_parser import extract_text_from_pdf
 from backend.services.intent_classifier import classify_intent
-from backend.agents.estimator import estimate_salary
+from backend.agents.estimator import estimate_value
 from backend.services.capability_router import get_capabilities
 from backend.agents.planner import create_plan
 from backend.agents.critic import critique_section
@@ -80,7 +80,7 @@ async def query_doc(
 
         section = None
         response = {
-            "steps": [s["action"] for s in steps]
+            "trace":[]
         }
         
         if "reasoning" in [s["action"] for s in steps]:
@@ -91,6 +91,64 @@ async def query_doc(
         # Step 4: Execute
         for step in steps:
             action = step.get("action")
+            response["trace"].append({
+                "step": "retrieve",
+                "output": section.get("title")
+            })
+
+            crit = critique_section(section, query)
+            response["critique"] = crit
+
+            response["trace"].append({
+                "step": "critique",
+                "output": crit[:200]
+            })
+            
+            ver = verify_consistency(tree, section, query)
+
+            response["verification"] = ver["raw"]
+            response["confidence"] = ver["confidence"]
+
+            response["trace"].append({
+                "step": "verify",
+                "output": f"Confidence: {ver['confidence']}"
+            })
+            
+            est = estimate_value(section, query)
+            response["estimation"] = est
+
+            response["trace"].append({
+                "step": "estimate",
+                "output": "Estimation completed"
+            })
+            
+            sim = simulate_scenario(section, query)
+            response["simulation"] = sim
+
+            response["trace"].append({
+                "step": "simulate",
+                "output": "Scenario analyzed"
+            })
+            
+            ans = call_llm(
+                        f"""
+                    You are an AI reasoning assistant.
+
+                    Given the user query:
+                    {query}
+
+                    And the context:
+                    {section['content']}
+
+                    Provide a clear, concise answer.
+                    """
+                    )
+            response["answer"] = ans
+
+            response["trace"].append({
+                "step": "answer",
+                "output": ans[:150]
+            })
 
             if action == "retrieve":
                 section = select_relevant_section(tree, query)
@@ -109,7 +167,7 @@ async def query_doc(
                 response["verification"] = response["verification"]["raw"]
 
             elif action == "estimate":
-                response["estimation"] = estimate_salary(section, query)
+                response["estimation"] = estimate_value(section, query)
 
             elif action == "simulate":
                 response["simulation"] = simulate_scenario(section, query)
