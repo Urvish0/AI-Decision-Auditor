@@ -9,6 +9,7 @@ def build_tree(text: str):
         if not line:
             continue
 
+
         if line.lower().startswith("section"):
             current_section = {
                 "title": line,
@@ -19,5 +20,14 @@ def build_tree(text: str):
             tree["children"].append(current_section)
         elif current_section:
             current_section["content"] += " " + line
+            
+        # Fallback for PDFs (no sections detected)
+        if not tree["children"]:
+            tree["children"].append({
+                "title": "Full Document",
+                "content": text,
+                "summary": "",
+                "children": []
+            })
 
     return tree

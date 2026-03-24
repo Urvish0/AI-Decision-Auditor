@@ -1,21 +1,21 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, UploadFile, File
 from backend.services.tree_builder import build_tree
 from backend.agents.graph import build_graph
+from backend.services.pdf_parser import extract_text_from_pdf
 
 router = APIRouter()
 
 graph = build_graph()
 
 @router.post("/query")
-async def query_doc(payload: dict):
+async def query_doc(file: UploadFile = File(...), query: str = ""):
     try:
-        query = payload.get("query")
+        file_path = f"backend/data/{file.filename}"
 
-        if not query:
-            return {"error": "Query is required"}
+        with open(file_path, "wb") as f:
+            f.write(await file.read())
 
-        with open("backend/data/sample_doc.txt") as f:
-            text = f.read()
+        text = extract_text_from_pdf(file_path)
 
         tree = build_tree(text)
 
@@ -24,9 +24,13 @@ async def query_doc(payload: dict):
             "tree": tree
         })
 
+        section = result.get("section")
+        
+        print("TREE:", tree)
+
         return {
             "plan": result.get("plan"),
-            "section": result.get("section", {}).get("title"),
+            "section": section["title"] if section else "No section found",
             "critique": result.get("critique"),
             "verification": result.get("verification", {}).get("raw"),
             "confidence": result.get("verification", {}).get("confidence"),

@@ -6,32 +6,30 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
 
   const handleSubmit = async () => {
     setLoading(true);
-    setResult(null);
-
-    try {
-      const res = await fetch("http://localhost:8000/query", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ query }),
-      });
-
-      const data = await res.json();
-      setResult(data);
-    } catch (err) {
-      setResult({ error: "Something went wrong" });
-    }
-
+  
+    const formData = new FormData();
+    if (file) formData.append("file", file);
+    formData.append("query", query);
+  
+    const res = await fetch("http://localhost:8000/query", {
+      method: "POST",
+      body: formData,
+    });
+  
+    const data = await res.json();
+    setResult(data);
     setLoading(false);
   };
 
   return (
     <div style={{ padding: "40px", fontFamily: "Arial" }}>
       <h1>🧠 AI Decision Auditor</h1>
+
+      <input type="file" onChange={(e) => setFile(e.target.files?.[0] || null)} />
 
       <div style={{ marginBottom: "20px" }}>
         <input
