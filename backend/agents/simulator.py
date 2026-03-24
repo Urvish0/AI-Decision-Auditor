@@ -4,20 +4,25 @@ def simulate_scenario(section, query):
     prompt = f"""
 You are a decision simulation AI.
 
-Given the original content:
-
+Original content:
 {section['content']}
 
-And the hypothetical scenario:
-
+Scenario:
 {query}
 
-Analyze the impact of this change.
+Return STRICTLY:
 
-Return:
-- Updated Outcome
-- New Risks
-- Key Changes
+Original Outcome:
+<text>
+
+Simulated Outcome:
+<text>
+
+Impact:
+<key differences>
+
+New Risks:
+<risks introduced>
 """
 
     return call_llm(prompt)
