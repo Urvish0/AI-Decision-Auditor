@@ -1,5 +1,5 @@
 from fastapi import APIRouter, UploadFile, File
-from backend.services.tree_builder import build_tree
+from backend.services.structure_builder import build_smart_tree
 from backend.agents.graph import build_graph
 from backend.services.pdf_parser import extract_text_from_pdf
 
@@ -17,7 +17,7 @@ async def query_doc(file: UploadFile = File(...), query: str = ""):
 
         text = extract_text_from_pdf(file_path)
 
-        tree = build_tree(text)
+        tree = build_smart_tree(text)
 
         result = graph.invoke({
             "query": query,
