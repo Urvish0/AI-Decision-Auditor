@@ -16,10 +16,19 @@ from backend.services.llm import call_llm
 from backend.agents.simulator import simulate_scenario
 from fastapi import Form
 from typing import List
+import os
+import re
+import uuid
 
 router = APIRouter()
 
 graph = build_graph()
+
+def sanitize_filename(filename: str):
+    # remove special chars, keep alphanumeric + dot
+    filename = re.sub(r'[^a-zA-Z0-9.\-_]', '_', filename)
+    return filename
+
 
 @router.post("/query")
 async def query_doc(
@@ -33,7 +42,11 @@ async def query_doc(
         texts = []
 
         for file in files:
-            file_path = f"backend/data/{file.filename}"
+            safe_name = sanitize_filename(file.filename)
+
+            unique_name = f"{uuid.uuid4().hex}_{safe_name}"
+
+            file_path = os.path.join("backend/data", unique_name)
 
             with open(file_path, "wb") as f:
                 f.write(await file.read())
@@ -41,7 +54,7 @@ async def query_doc(
             text = extract_text_from_pdf(file_path)
 
             texts.append({
-                "name": file.filename,
+                "name": file.filename,  
                 "content": text
             })
             
@@ -162,9 +175,28 @@ async def query_doc(
                 response["critique"] = critique_section(section, query)
 
             elif action == "verify":
-                response["verification"] = verify_consistency(tree, section, query)
-                response["confidence"] = response["verification"]["confidence"]
-                response["verification"] = response["verification"]["raw"]
+                ver = verify_consistency(tree, section, query)
+
+                response["verification"] = ver["raw"]
+
+                from backend.services.retriever import compute_retrieval_score
+
+                retrieval_score = compute_retrieval_score(section, query)
+                consistency_score = ver["confidence"]
+                coverage_score = 1.0 if section else 0.5
+
+                final_confidence = (
+                    retrieval_score * 0.4 +
+                    consistency_score * 0.4 +
+                    coverage_score * 0.2
+                )
+
+                response["confidence"] = round(final_confidence, 2)
+
+                response["trace"].append({
+                    "step": "confidence",
+                    "output": f"{response['confidence']}"
+                })
 
             elif action == "estimate":
                 response["estimation"] = estimate_value(section, query)

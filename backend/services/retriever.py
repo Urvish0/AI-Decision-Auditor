@@ -1,5 +1,17 @@
 from backend.services.llm import call_llm
 
+def compute_retrieval_score(section, query):
+    if not section:
+        return 0.3
+
+    words = query.lower().split()
+    matches = sum(
+        1 for word in words
+        if word in section["content"].lower()
+    )
+
+    return min(1.0, matches / len(words)) if words else 0.5
+
 def generate_answer(section, query):
     prompt = f"""
 You are answering a question based on a document section.

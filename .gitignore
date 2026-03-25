@@ -15,4 +15,4 @@ Thumbs.db
 *.log
 
 # Data (optional)
-data/*.pdf
+backend/data/*.pdf
