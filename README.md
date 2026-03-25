@@ -5,7 +5,7 @@
 
 ## Overview
 
-AI Decision Auditor is a **reasoning-first AI system** designed to analyze, critique, verify, and simulate decisions from documents — without relying on traditional vector embeddings.
+AI Decision Auditor is a **reasoning-first AI system** designed to analyze, critique, verify, and simulate decisions from documents without relying on traditional vector embeddings.
 
 Unlike typical RAG systems that only retrieve and summarize, this system introduces **structured reasoning pipelines** powered by multi-agent orchestration.
 
@@ -143,7 +143,3 @@ npm run dev
 - Memory layer  
 
 ---
-
-## ⭐ If you like this project
-
-Give it a star!
