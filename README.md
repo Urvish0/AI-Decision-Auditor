@@ -1,145 +1,265 @@
-# AI Decision Auditor  
-### Reasoning-First, Vectorless RAG Engine for Decision Analysis
+<div align="center">
+
+# 🔍 AI Decision Auditor
+
+### Reasoning-First RAG Engine for Decision Analysis
+
+*Most AI systems summarize. This one thinks.*
+
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-latest-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![LangGraph](https://img.shields.io/badge/LangGraph-latest-FF6B35?style=flat-square)](https://langchain-ai.github.io/langgraph/)
+[![Next.js](https://img.shields.io/badge/Next.js-14-000000?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Completed-brightgreen?style=flat-square)]()
+
+[Overview](#-overview) · [How It Works](#-how-it-works) · [Features](#-features) · [Architecture](#-architecture) · [Quick Start](#-quick-start) · [Contributing](#-contributing)
+
+</div>
 
 ---
 
-## Overview
+## 🧭 Overview
 
-AI Decision Auditor is a **reasoning-first AI system** designed to analyze, critique, verify, and simulate decisions from documents without relying on traditional vector embeddings.
+AI Decision Auditor is a **reasoning-first document analysis system** that goes well beyond what typical RAG does.
 
-Unlike typical RAG systems that only retrieve and summarize, this system introduces **structured reasoning pipelines** powered by multi-agent orchestration.
+Standard RAG retrieves context and generates an answer. AI Decision Auditor **audits** it identifies risks, surfaces contradictions, flags missing information, estimates confidence, and simulates what-if scenarios. The entire reasoning chain is visible, not hidden inside a black box.
 
----
-
-## Key Features
-
-### Reasoning-First Architecture
-- Goes beyond retrieval → performs **analysis, critique, verification, and simulation**
-- Structured execution pipeline instead of single LLM prompt
+**Who it's for:**
+- Analysts reviewing complex documents (contracts, proposals, strategy docs, reports)
+- Engineers who want a reference architecture for multi-agent document reasoning
+- Anyone who needs more than a summary they need a critique
 
 ---
 
-### Vectorless RAG
-- No embeddings or vector databases
-- Uses **hierarchical document structuring + traversal**
-- Improves interpretability and control
+## 💡 How It Works
+
+The core idea is a **structured reasoning pipeline** instead of a single LLM prompt. Each agent in the chain has one job, does it well, and passes its findings forward.
+
+```
+Your Document
+      │
+      ▼
+ ┌─────────────┐
+ │  Guardrails │  ← Rules-based safety and scope checks
+ └──────┬──────┘
+        ▼
+ ┌─────────────┐
+ │   Planner   │  ← LLM decides which agents to invoke and in what order
+ └──────┬──────┘
+        │
+        ▼
+┌───────────────────────────────────────────┐
+│              Execution Pipeline           │
+│                                           │
+│  1. Retriever   → finds relevant context  │
+│  2. Critic      → identifies risks        │
+│  3. Verifier    → checks consistency      │
+│  4. Estimator   → predicts values/costs   │
+│  5. Simulator   → runs what-if scenarios  │
+│  6. Generator   → produces final response │
+└───────────────────────────────────────────┘
+        │
+        ▼
+ Response + Reasoning Trace + Confidence Score
+```
 
 ---
 
-### Multi-Agent Pipeline
+## ✨ Features
 
-- **Retriever** → finds relevant context  
-- **Critic** → identifies risks & weaknesses  
-- **Verifier** → checks consistency across document  
-- **Estimator** → predicts values (cost, risk, etc.)  
-- **Simulator** → evaluates what-if scenarios  
-- **Answer Generator** → produces final response  
+### 🧠 Vectorless RAG
+No embeddings. No vector database. Documents are structured hierarchically and traversed at query time — giving you more interpretability and control over what context gets used, and why.
 
----
+### 🤝 Multi-Agent Pipeline
+Six specialized agents, each focused on a single reasoning task. The planner decides which agents to invoke based on your query — not every question needs all six.
 
-### Hybrid Planning System
-- Guardrails (rules) + LLM-based planner
-- Ensures predictable + adaptive execution
+### 🔀 Hybrid Planning System
+A **guardrails layer** (deterministic rules) combined with an **LLM-based planner** (adaptive reasoning). Predictable where it needs to be, flexible where it should be.
 
----
+### 📄 Cross-Document Reasoning
+Feed multiple documents and ask questions that span all of them. The system identifies differences, conflicts, and gaps across sources — not just within one.
 
-### Cross-Document Reasoning
-- Analyze multiple documents
-- Identify differences, conflicts, and gaps
+### 🎲 What-If Simulation
+Ask hypothetical questions: *"What if the budget assumption changes by 20%?"* or *"What if this clause is removed?"* The Simulator agent evaluates the downstream impact dynamically.
 
----
+### 📊 Real Confidence Scoring
+Confidence scores are grounded in **retrieval relevance, internal consistency, and document coverage** — not generated by the LLM guessing how sure it is. A meaningful number you can actually trust.
 
-### What-if Simulation
-- Evaluate hypothetical scenarios dynamically
+### 🔎 Explainable Reasoning Trace
+Every response comes with a full step-by-step trace of how the answer was reached — which agents ran, what they found, and where they disagreed.
 
 ---
 
-### Explainable AI (Reasoning Trace)
-- Step-by-step reasoning pipeline visualization
+## 🏗 Architecture
+
+```
+┌──────────────────────────────────────────────────────────┐
+│                    AI Decision Auditor                   │
+│                                                          │
+│  ┌──────────┐    ┌────────────────────────────────────┐  │
+│  │ Next.js  │───▶│           FastAPI Backend          │  │
+│  │ Frontend │    │                                    │  │
+│  └──────────┘    │  ┌──────────┐   ┌──────────────┐  │  │
+│                  │  │Guardrails│──▶│   Planner    │  │  │
+│                  │  └──────────┘   └──────┬───────┘  │  │
+│                  │                        │           │  │
+│                  │            ┌───────────▼────────┐  │  │
+│                  │            │  LangGraph Runtime  │  │  │
+│                  │            │                    │  │  │
+│                  │            │  Retriever         │  │  │
+│                  │            │  Critic            │  │  │
+│                  │            │  Verifier          │  │  │
+│                  │            │  Estimator         │  │  │
+│                  │            │  Simulator         │  │  │
+│                  │            │  Generator         │  │  │
+│                  │            └────────────────────┘  │  │
+│                  └────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────────┘
+```
+
+**Tech Stack:**
+
+| Layer | Technologies |
+|---|---|
+| Frontend | Next.js 14, TypeScript, Tailwind CSS |
+| Backend | FastAPI, Python 3.11, LangGraph |
+| LLM | Groq (Llama), OpenAI |
+| Document Processing | Hierarchical structuring + traversal (no vector DB) |
 
 ---
 
-### Real Confidence System
-- Based on retrieval relevance, consistency, and coverage
-- Not LLM-generated
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Python 3.13+ with `uv` (recommended) or `pip`
+- Node.js 18+
+- A Groq or OpenAI API key
+
+### 1. Clone the repo
+
+```bash
+git clone https://github.com/Urvish0/AI-Decision-Auditor.git
+cd AI-Decision-Auditor
+```
+
+### 2. Backend setup
+
+```bash
+cd backend
+
+# With uv (recommended)
+uv sync
+uv run uvicorn main:app --reload
+
+# With pip
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
+
+### 3. Configure environment
+
+```bash
+cp .env.example .env
+```
+
+```env
+GROQ_API_KEY=your_groq_key
+# or
+OPENAI_API_KEY=your_openai_key
+```
+
+### 4. Frontend setup
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend: `http://localhost:3000`  
+API docs: `http://localhost:8000/docs`
 
 ---
 
-## Architecture
+## 💬 Example Queries
 
-User Query  
-↓  
-Guardrails  
-↓  
-Planner  
-↓  
-Execution:
-- Retrieve  
-- Critique  
-- Verify  
-- Estimate  
-- Simulate  
-- Answer  
-↓  
-Response + Trace + Confidence  
+Once running, try these against any document you upload:
+
+| Query | What it triggers |
+|---|---|
+| `"Audit this document"` | Full pipeline — all 6 agents |
+| `"What are the risks?"` | Critic + Verifier |
+| `"What's missing from this proposal?"` | Retriever + Critic |
+| `"What if the timeline slips by 3 months?"` | Simulator |
+| `"How confident are you in section 3?"` | Verifier + confidence scoring |
+| `"Compare these two contracts"` | Cross-document Retriever + Critic |
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 
-backend/
-  ├── agents/
-  ├── services/
-  ├── api/
-  └── main.py
-
-frontend/
-  └── Next.js UI
-
----
-
-## ⚙️ Tech Stack
-
-- FastAPI  
-- Next.js  
-- Groq / OpenAI APIs  
-- LangGraph  
-
----
-
-## Example Queries
-
-- "Audit this document"
-- "What are the risks?"
-- "What are the differences?"
-- "What if assumptions change?"
+```
+AI-Decision-Auditor/
+├── backend/
+│   ├── agents/          # Individual agent implementations
+│   │   ├── retriever.py
+│   │   ├── critic.py
+│   │   ├── verifier.py
+│   │   ├── estimator.py
+│   │   ├── simulator.py
+│   │   └── generator.py
+│   ├── services/        # Document structuring + traversal logic
+│   ├── api/             # FastAPI route definitions
+│   └── main.py
+├── frontend/            # Next.js UI
+└── README.md
+```
 
 ---
 
-## Setup
+## 🗺 Roadmap
 
-### Backend
-uv sync  
-uv run uvicorn main:app --reload  
-
-### Frontend
-npm install  
-npm run dev  
+- [ ] Hybrid RAG mode (vectorless + embedding fallback for large docs)
+- [ ] Memory layer for multi-turn auditing sessions
+- [ ] Support for DOCX, and spreadsheet ingestion
+- [ ] Export reasoning trace as structured report (PDF/JSON)
+- [ ] REST webhooks for async audit jobs on large documents
 
 ---
 
-## Design Principles
+## 🤝 Contributing
 
-- Reasoning > Retrieval  
-- Explainability > Black-box  
-- Structure > Embeddings  
+This project has a lot of interesting open problems contributions are welcome.
+
+**Good starting points:**
+- Add support for a new document format (DOCX)
+- Improve the Estimator agent's numerical reasoning
+- Build out the what-if simulation scenarios
+- Add tests for individual agent outputs
+
+```bash
+git checkout -b feature/your-feature-name
+git commit -m "feat: describe your change"
+git push origin feature/your-feature-name
+# Open a pull request
+```
+
+Open an issue first for significant changes happy to discuss direction.
 
 ---
 
-## Future Work
+## 👤 Author
 
-- Better structuring  
-- Hybrid RAG  
-- Memory layer  
+**Urvish Prajapati**  
+Backend & AI Engineer · Mumbai, India  
+[LinkedIn](https://www.linkedin.com/in/urvish-prajapati-510023225) · [GitHub](https://github.com/Urvish0)
 
 ---
+
+<div align="center">
+
+Found this useful or interesting? A ⭐ helps more people find it.
+
+</div>
